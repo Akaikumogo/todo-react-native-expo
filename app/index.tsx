@@ -31,7 +31,7 @@ export default function index() {
    const animatedValue = useRef(new Animated.Value(0)).current;
 
    const toggleDrawer = () => {
-      setDrawerOpen((p) => ({ ...p, open: !p.open }));
+      setDrawerOpen((p) => ({ open: !p.open, type: 'add' }));
       Animated.timing(animatedValue, {
          toValue: drawerOpen.open ? 0 : 1,
          duration: 300,
@@ -51,7 +51,7 @@ export default function index() {
 
    const drawerTranslateX = animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [-1000, 0],
+      outputRange: [-3000, 0],
    });
    const [todoArr, serTodoArr] = useState<
       {
@@ -138,6 +138,7 @@ export default function index() {
                      ) : (
                         <View className="border-b-[0.8px]">
                            <RNPickerSelect
+                              value={todo.todoStatus}
                               style={{
                                  inputAndroid: {
                                     backgroundColor: '#e0f2fe',
@@ -187,7 +188,10 @@ export default function index() {
                               JSON.stringify([
                                  {
                                     ...todo,
-                                    todoStatus: todo.todoStatus === '',
+                                    todoStatus:
+                                       todo.todoStatus === ''
+                                          ? 'not_started'
+                                          : todo.todoStatus,
                                  },
                                  ...(todoArr || []),
                               ]),
@@ -250,12 +254,11 @@ export default function index() {
                      </View>
                      <View className="flex-1 flex-col items-center gap-4 justify-start">
                         <Text
-                           textColor="white"
-                           mode="elevated"
                            onPress={() => {
                               setDrawerOpen({ open: true, type: 'edit' });
                               setTodo({
-                                 ...item,
+                                 todoTitle: item.todoTitle,
+                                 todoStatus: item.todoStatus,
                                  todoDate: new Date(item.todoDate),
                               });
                               setEditItemIndex(index);
@@ -266,6 +269,11 @@ export default function index() {
                         </Text>
                         <Text
                            onPress={() => {
+                              setTodo({
+                                 todoTitle: '',
+                                 todoDate: new Date(),
+                                 todoStatus: 'not_started',
+                              });
                               const newTodoArr = [...todoArr];
                               newTodoArr.splice(index, 1);
                               AsyncStorage.setItem(
